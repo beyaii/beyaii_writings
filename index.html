@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Beyaii Writings — Whispers of Dreams, Inked in Violet Hues</title>
+  <style>
+    :root{--accent:#a25fe6;--muted:#6e498f}
+    *{box-sizing:border-box}
+    body{font-family:'Poppins',sans-serif;margin:0;background:linear-gradient(135deg,#f5e6ff,#e0d6ff);color:#3d1850}
+    header{background:linear-gradient(90deg,var(--accent),#7e3bd9);color:white;text-align:center;padding:22px 16px}
+    nav{display:flex;gap:8px;justify-content:center;padding:12px}
+    nav button{background:#cba0ff;border:none;border-radius:8px;padding:8px 12px;color:white;cursor:pointer}
+    main{max-width:1100px;margin:20px auto;padding:18px;background:rgba(255,255,255,0.92);border-radius:12px}
+    .hidden{display:none}
+
+    /* series / library (bookshelf style) */
+    .series-group{margin-bottom:18px;border-radius:10px;padding:10px;border:1px solid rgba(162,95,230,0.08)}
+    .series-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+    .series-title{font-weight:700;color:var(--muted);font-size:1.05rem}
+    .toggle-btn{background:transparent;border:none;color:var(--accent);cursor:pointer}
+    .books-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:18px;margin-top:12px;align-items:start}
+    .book-card{background:white;border-radius:10px;padding:8px;box-shadow:0 4px 14px rgba(65,0,90,0.06);position:relative;text-align:center}
+    .book-cover{width:100%;height:210px;aspect-ratio:2/3;background:#faf0ff;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .book-cover img{width:100%;height:100%;object-fit:cover}
+    .book-meta{margin-top:8px}
+    .book-title{font-weight:700;margin-top:8px;font-size:0.98rem}
+    .book-synopsis{font-size:12px;color:#6f4b87;height:38px;overflow:hidden;margin-top:6px}
+    .author-controls{position:absolute;top:8px;right:8px;display:flex;gap:6px}
+    .btn-small{background:transparent;border:1px solid rgba(0,0,0,0.06);padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px}
+    .book-title-wrap{min-height:40px}
+
+    /* reader */
+    .reader-header{display:flex;gap:18px;align-items:flex-start}
+    .reader-cover{width:180px;height:240px;border-radius:8px;overflow:hidden;background:#fff}
+    .reader-cover img{width:100%;height:100%;object-fit:cover}
+    .chapter-nav{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px}
+    .chapter-box{min-height:240px;padding:16px;border-radius:8px;background:linear-gradient(180deg,#fff,#fff7ff);box-shadow:0 6px 18px rgba(65,0,90,0.04);transition:opacity 260ms ease}
+    .nav-btn{background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+
+    /* writer */
+    label{display:block;margin-top:10px;font-size:13px;color:#5b3e78}
+    input[type=text],textarea,input[type=file]{width:100%;padding:8px;border-radius:8px;border:1px solid #e8d8ff;margin-top:6px}
+    .row{display:flex;gap:8px}
+    .col{flex:1}
+    footer{text-align:center;margin-top:18px;color:#6e498f}
+
+    @media(max-width:800px){.reader-header{flex-direction:column}.reader-cover{width:100%;height:200px}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💜 Beyaii Writings</h1>
+    <p><em>“Whispers of dreams, inked in violet hues.”</em></p>
+  </header>
+
+  <nav>
+    <button id="homeBtn">🏠 Library</button>
+    <button id="writerBtn" class="hidden">✍️ Writer Mode</button>
+    <button id="loginBtn">Author Login</button>
+  </nav>
+
+  <main>
+    <!-- LIBRARY -->
+    <section id="libraryPage">
+      <h2>📚 Library</h2>
+      <div id="seriesContainer"></div>
+      <p id="emptyMsg">No published books yet. Author, use Writer Mode to add one.</p>
+    </section>
+
+    <!-- WRITER -->
+    <section id="writerPage" class="hidden">
+      <h2>✍️ Writer Mode — Create / Edit Book</h2>
+      <input id="bookId" type="hidden">
+      <label>Book Title</label>
+      <input id="bookTitle" placeholder="Title">
+      <label>Synopsis</label>
+      <input id="bookSynopsis" placeholder="Short synopsis">
+      <label>Series (optional)</label>
+      <input id="bookSeries" placeholder="Series name">
+
+      <div class="row">
+        <div class="col">
+          <label>Attach cover image</label>
+          <input id="coverFile" type="file" accept="image/*">
+        </div>
+      </div>
+
+      <h3>Chapters</h3>
+      <label>Chapter title</label>
+      <input id="chapterTitle" placeholder="Chapter title">
+      <label>Chapter content</label>
+      <textarea id="chapterContent" rows="6" placeholder="Write chapter content..."></textarea>
+      <div style="margin-top:8px"><button class="btn-small" id="addChapterBtn">Add chapter</button></div>
+      <div id="chaptersList" style="margin-top:12px"></div>
+
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn-small" id="saveDraftBtn">Save Draft</button>
+        <button class="btn-small" id="publishBtn">Publish Book</button>
+      </div>
+    </section>
+
+    <!-- READER -->
+    <section id="readerPage" class="hidden">
+      <div class="reader-header">
+        <div class="reader-cover" id="readerCover"></div>
+        <div>
+          <h2 id="readerTitle"></h2>
+          <div class="muted" id="readerSeries"></div>
+          <p id="readerSynopsis"></p>
+        </div>
+      </div>
+
+      <div class="chapter-nav">
+        <button class="nav-btn" id="prevChapter">← Previous</button>
+        <div id="chapterIndicator" class="muted">Chapter 1</div>
+        <button class="nav-btn" id="nextChapter">Next →</button>
+      </div>
+
+      <div id="chapterBox" class="chapter-box" aria-live="polite"></div>
+
+      <div style="margin-top:12px"><button class="btn-small" id="backToLibraryBtn">⬅ Back to Library</button></div>
+    </section>
+  </main>
+
+  <footer>© 2025 Beyaii Writings — Soft words, deep worlds 💫</footer>
+
+  <script>
+    // Storage
+    const LS_KEY = 'beyaiiBooks_v3';
+    let books = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+    let isAuthor = false;
+    let tempChapters = [];
+
+    // Elements
+    const homeBtn = document.getElementById('homeBtn');
+    const writerBtn = document.getElementById('writerBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const seriesContainer = document.getElementById('seriesContainer');
+    const emptyMsg = document.getElementById('emptyMsg');
+
+    // writer elements
+    const writerPage = document.getElementById('writerPage');
+    const bookIdInput = document.getElementById('bookId');
+    const bookTitleInput = document.getElementById('bookTitle');
+    const bookSynopsisInput = document.getElementById('bookSynopsis');
+    const bookSeriesInput = document.getElementById('bookSeries');
+    const coverFileInput = document.getElementById('coverFile');
+    const chapterTitleInput = document.getElementById('chapterTitle');
+    const chapterContentInput = document.getElementById('chapterContent');
+    const addChapterBtn = document.getElementById('addChapterBtn');
+    const chaptersListDiv = document.getElementById('chaptersList');
+    const saveDraftBtn = document.getElementById('saveDraftBtn');
+    const publishBtn = document.getElementById('publishBtn');
+
+    // reader elements
+    const readerPage = document.getElementById('readerPage');
+    const readerCover = document.getElementById('readerCover');
+    const readerTitle = document.getElementById('readerTitle');
+    const readerSeries = document.getElementById('readerSeries');
+    const readerSynopsis = document.getElementById('readerSynopsis');
+    const chapterBox = document.getElementById('chapterBox');
+    const prevChapterBtn = document.getElementById('prevChapter');
+    const nextChapterBtn = document.getElementById('nextChapter');
+    const chapterIndicator = document.getElementById('chapterIndicator');
+    const backToLibraryBtn = document.getElementById('backToLibraryBtn');
+
+    // state for reading
+    let activeBookId = null;
+    let activeChapterIndex = 0;
+
+    function uid(){return 'b_'+Math.random().toString(36).slice(2,9)}
+    function saveAll(){localStorage.setItem(LS_KEY, JSON.stringify(books));}
+
+    function showPage(id){
+      document.getElementById('libraryPage').classList.add('hidden');
+      writerPage.classList.add('hidden');
+      readerPage.classList.add('hidden');
+      if(id === 'library') document.getElementById('libraryPage').classList.remove('hidden');
+      if(id === 'writer') writerPage.classList.remove('hidden');
+      if(id === 'reader') readerPage.classList.remove('hidden');
+    }
+
+    // Group and render series with collapsible groups
+    function groupBySeries(items){
+      const map = {};
+      items.filter(b=>b.published).forEach(b=>{
+        const s = b.series || 'Standalone';
+        if(!map[s]) map[s]=[]; map[s].push(b);
+      });
+      return map;
+    }
+
+    function renderLibrary(){
+      seriesContainer.innerHTML = '';
+      const published = books.filter(b=>b.published);
+      if(published.length === 0){ emptyMsg.style.display='block'; return } else emptyMsg.style.display='none';
+      const grouped = groupBySeries(books);
+      Object.keys(grouped).forEach(seriesName => {
+        const group = grouped[seriesName];
+        const container = document.createElement('div'); container.className='series-group';
+        const header = document.createElement('div'); header.className='series-header';
+        const title = document.createElement('div'); title.className='series-title'; title.innerText = seriesName + ` (${group.length})`;
+        const toggle = document.createElement('button'); toggle.className='toggle-btn'; toggle.innerText='Collapse';
+        header.appendChild(title); header.appendChild(toggle);
+        container.appendChild(header);
+        const grid = document.createElement('div'); grid.className='books-grid';
+        group.forEach(book=>{
+          const card = document.createElement('div'); card.className='book-card';
+          card.innerHTML = `<div class='book-cover'>${book.cover?`<img src='${book.cover}'/>`:'<div style="padding:18px;color:#7a4fb6">No cover</div>'}</div><div class='book-meta'><div class='book-title'>${escapeHtml(book.title)}</div><div class='book-synopsis'>${escapeHtml(book.synopsis||'')}</div></div>`;
+          card.addEventListener('click', (e)=>{ // prevent click when author buttons are pressed
+            if(e.target.closest('.author-controls')) return; openReader(book.id);
+          });
+
+          // author controls (edit/delete) — visible only when author unlocked
+          const controls = document.createElement('div'); controls.className='author-controls';
+          const editBtn = document.createElement('button'); editBtn.className='btn-small'; editBtn.innerText='Edit'; editBtn.onclick = (ev)=>{ ev.stopPropagation(); startEditBook(book.id); };
+          const delBtn = document.createElement('button'); delBtn.className='btn-small'; delBtn.innerText='Delete'; delBtn.onclick = (ev)=>{ ev.stopPropagation(); deleteBook(book.id); };
+          controls.appendChild(editBtn); controls.appendChild(delBtn);
+          if(isAuthor){ card.appendChild(controls); }
+
+          grid.appendChild(card);
+        });
+        container.appendChild(grid);
+        seriesContainer.appendChild(container);
+
+        // collapse behavior
+        let open = true;
+        toggle.onclick = ()=>{
+          open = !open; toggle.innerText = open? 'Collapse':'Expand'; grid.style.display = open? 'grid':'none';
+        };
+      });
+    }
+
+    function openReader(bookId){
+      const book = books.find(b=>b.id === bookId);
+      if(!book) return;
+      activeBookId = bookId; activeChapterIndex = 0;
+      readerCover.innerHTML = book.cover? `<img src='${book.cover}'/>` : '<div style="padding:18px;color:#7a4fb6">No cover</div>';
+      readerTitle.innerText = book.title;
+      readerSeries.innerText = book.series? ('Series: '+book.series): '';
+      readerSynopsis.innerText = book.synopsis || '';
+      renderChapter();
+      showPage('reader');
+    }
+
+    function renderChapter(){
+      const book = books.find(b=>b.id===activeBookId); if(!book) return;
+      const ch = book.chapters[activeChapterIndex];
+      chapterBox.style.opacity = 0; setTimeout(()=>{ chapterBox.innerHTML = `<h3>${escapeHtml(ch.title)}</h3><div>${escapeHtml(ch.content).replace(/\n/g,'<br>')}</div>`; chapterBox.style.opacity = 1; }, 220);
+      chapterIndicator.innerText = `Chapter ${activeChapterIndex+1} of ${book.chapters.length}`;
+      prevChapterBtn.disabled = activeChapterIndex === 0; nextChapterBtn.disabled = activeChapterIndex >= book.chapters.length-1;
+    }
+
+    prevChapterBtn.onclick = ()=>{ if(activeChapterIndex>0){ activeChapterIndex--; renderChapter(); window.scrollTo({top:0,behavior:'smooth'});} };
+    nextChapterBtn.onclick = ()=>{ const book=books.find(b=>b.id===activeBookId); if(activeChapterIndex<book.chapters.length-1){ activeChapterIndex++; renderChapter(); window.scrollTo({top:0,behavior:'smooth'});} };
+
+    backToLibraryBtn.onclick = ()=>{ showPage('library'); }
+
+    // Writer actions: add chapter, save, publish, edit, delete
+    addChapterBtn.onclick = ()=>{
+      const t = chapterTitleInput.value.trim(); const c = chapterContentInput.value.trim(); if(!t||!c){ alert('Chapter needs title and content'); return }
+      tempChapters.push({title:t,content:c}); chapterTitleInput.value=''; chapterContentInput.value=''; refreshChaptersUI();
+    }
+
+    function refreshChaptersUI(){ chaptersListDiv.innerHTML=''; tempChapters.forEach((ch,i)=>{ const d=document.createElement('div'); d.style.padding='8px'; d.style.border='1px solid rgba(162,95,230,0.06)'; d.style.borderRadius='8px'; d.style.marginBottom='8px'; d.innerHTML = `<strong>${i+1}. ${escapeHtml(ch.title)}</strong><div style="font-size:13px;color:#6f4b87">${escapeHtml(ch.content.substring(0,120))}...</div><div style="margin-top:6px"><button class='btn-small' onclick='editChapter(${i})'>Edit</button> <button class='btn-small' onclick='removeChapter(${i})'>Remove</button></div>`; chaptersListDiv.appendChild(d); }); }
+
+    window.editChapter = function(i){ const ch=tempChapters[i]; chapterTitleInput.value=ch.title; chapterContentInput.value=ch.content; removeChapter(i); }
+    window.removeChapter = function(i){ tempChapters.splice(i,1); refreshChaptersUI(); }
+
+    coverFileInput.addEventListener('change', (e)=>{ const f = e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload = ()=>{ coverFileInput.dataset.dataurl = r.result }; r.readAsDataURL(f); });
+
+    function collectBook(publish){ const title = bookTitleInput.value.trim(); if(!title) { alert('Title required'); return null } const synopsis = bookSynopsisInput.value.trim(); const series = bookSeriesInput.value.trim(); const coverData = coverFileInput.dataset.dataurl || ''; if(tempChapters.length===0){ if(!confirm('This book has no chapters. Continue?')) return null } const id = bookIdInput.value || uid(); return { id, title, synopsis, series, cover: coverData, chapters: tempChapters.slice(), published: !!publish } }
+
+    saveDraftBtn.onclick = ()=>{ const book = collectBook(false); if(!book) return; // if editing, replace
+      const idx = books.findIndex(b=>b.id===book.id); if(idx>=0){ books[idx]=book } else { books.push(book) } saveAll(); resetWriter(); alert('Draft saved'); renderLibrary(); showPage('library'); }
+
+    publishBtn.onclick = ()=>{ const book = collectBook(true); if(!book) return; const idx = books.findIndex(b=>b.id===book.id); if(idx>=0){ books[idx]=book } else { books.push(book) } saveAll(); resetWriter(); alert('Book published'); renderLibrary(); showPage('library'); }
+
+    function resetWriter(){ bookIdInput.value=''; bookTitleInput.value=''; bookSynopsisInput.value=''; bookSeriesInput.value=''; coverFileInput.value=''; delete coverFileInput.dataset.dataurl; tempChapters=[]; chaptersListDiv.innerHTML=''; }
+
+    function startEditBook(bookId){ const book = books.find(b=>b.id===bookId); if(!book) return; bookIdInput.value = book.id; bookTitleInput.value = book.title; bookSynopsisInput.value = book.synopsis; bookSeriesInput.value = book.series || ''; coverFileInput.dataset.dataurl = book.cover || ''; tempChapters = book.chapters.map(ch=>({title:ch.title,content:ch.content})); refreshChaptersUI(); showPage('writer'); writerBtn.classList.remove('hidden'); }
+
+    function deleteBook(bookId){ if(!confirm('Delete this book? This cannot be undone.')) return; books = books.filter(b=>b.id!==bookId); saveAll(); renderLibrary(); }
+
+    // author login
+    loginBtn.onclick = ()=>{ const code = prompt('Enter author access code:'); if(code === 'Bea_Nicole2005'){ isAuthor = true; writerBtn.classList.remove('hidden'); alert('Author mode unlocked — welcome Bea ✨') } else alert('Access denied') }
+
+    // navigation
+    homeBtn.onclick = ()=>{ renderLibrary(); showPage('library'); }
+    writerBtn.onclick = ()=>{ if(!isAuthor){ alert('Author access required'); return } resetWriter(); showPage('writer'); }
+
+    // helper
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]) }
+
+    // initial render
+    renderLibrary(); showPage('library');
+  </script>
+</body>
+</html>
